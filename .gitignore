@@ -1,0 +1,10 @@
+# Project exclude paths
+/venv/
+/dist/
+/build/
+/b3files.egg-info/
+/dados_b3/cotacoes_historicas/
+/opcoes/
+/test/
+/dados_b3/
+/documentacao_b3/
