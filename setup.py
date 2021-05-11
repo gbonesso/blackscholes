@@ -17,7 +17,8 @@ LONG_DESC_TYPE = "text/markdown"
 
 INSTALL_REQUIRES = [
       'numpy',
-      'pandas'#,
+      'pandas',
+      'scipy'
       #'os',
       #'zipfile',
       #'logging'

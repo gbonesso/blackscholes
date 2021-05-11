@@ -1,11 +1,8 @@
-## import certain packages
 from math import log, sqrt, pi, exp
 from scipy.stats import norm
-from datetime import datetime, date
-import numpy as np
-import pandas as pd
-from pandas import DataFrame
 from scipy.integrate import quad
+
+from blackscholes import pricing
 
 
 def dN(x):
@@ -119,31 +116,21 @@ def bsm_vega(S0, K, T, r, sigma):
 # Implied volatility function
 
 
-def bsm_call_imp_vol(S0, K, T, r, C0, sigma_est, it=100):
-    ''' Implied Volatility of European call option in BSM Model.
+def call_implied_volatility(S0, K, T, r, C0, sigma_est, it=100):
+    """
+    Implied Volatility of European call option in BSM Model.
 
-    Parameters
-    ==========
-    S0 : float
-        initial stock/index level
-    K : float
-        strike price
-    T : float
-        maturity date (in year fractions)
-    r : float
-        constant risk-free short rate
-    sigma_est : float
-        estimate of impl. volatility
-    it : integer
-        number of iterations
-
-    Returns
-    =======
-    simga_est : float
-        numerically estimated implied volatility
-    '''
+    :param S0:
+    :param K:
+    :param T:
+    :param r:
+    :param C0:
+    :param sigma_est:
+    :param it:
+    :return:
+    """
     for i in range(it):
-        bsm_call_ = bsm_call_value(S0, K, T, r, sigma_est)
+        bsm_call_ = pricing.call_value(S0, K, T, r, sigma_est)
         bsm_vega_ = bsm_vega(S0, K, T, r, sigma_est)
         # print(bsm_call_, " - ", bsm_vega_)
         sigma_est -= (bsm_call_ - C0) / bsm_vega_
@@ -153,7 +140,7 @@ def bsm_call_imp_vol(S0, K, T, r, C0, sigma_est, it=100):
 # Other implementation...
 
 
-def d1(S,K,T,r,sigma):
+def d1(S, K, T, r, sigma):
     return(log(S/K)+(r+sigma**2/2.)*T)/(sigma*sqrt(T))
 
 
@@ -175,7 +162,16 @@ def call_vega(S, K, T, r, sigma):
 
 # Another formula: https://www.macroption.com/black-scholes-formula/#theta
 def call_theta(S, K, T, r, sigma):
-    return 0.01 * (-(S * norm.pdf(d1(S, K, T, r, sigma)) * sigma) / (2 * sqrt(T)) - r * K * exp(-r * T) * norm.cdf(
+    """
+
+    :param S: Asset spot price
+    :param K: Strike price
+    :param T: Time to maturity (in years)
+    :param r: Risk free rate
+    :param sigma: Volatility
+    :return: Theta in years. Can be normalized in days dividing by 365.
+    """
+    return (-(S * norm.pdf(d1(S, K, T, r, sigma)) * sigma) / (2 * sqrt(T)) - r * K * exp(-r * T) * norm.cdf(
         d2(S, K, T, r, sigma)))
 
 

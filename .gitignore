@@ -1,6 +1,7 @@
 # Project exclude paths
-/documentacao/
+/docs/
+# /tests/
 /dist/
 /build/
 /b3files.egg-info/
-/test/
+
