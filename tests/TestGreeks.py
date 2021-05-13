@@ -53,10 +53,27 @@ class TestGreeks(unittest.TestCase):
         Section 15.11 page 365 Hull
         S0=21, K=20, r=0.1, sigma (initial estimate)=0.2, C0=1.875 e T=0.25
         """
-        self.assertEqual(round(greeks.call_implied_volatility(21, 20, 0.25, 0.1, 1.875, 0.2), 3), 0.235)
+        self.assertEqual(round(greeks.call_implied_volatility(21, 20, 0.25, 0.1, 1.875, 0.2), 3), 0.234)
+
+    def test_call_implied_volatility_starting_high(self):
+        """
+        Section 15.11 page 365 Hull
+        S0=21, K=20, r=0.1, sigma (initial estimate)=0.5, C0=1.875 e T=0.25
+        The difference from the prior test is the initial estimated volatility higher than the implied volatility
+        """
+        self.assertEqual(round(greeks.call_implied_volatility(21, 20, 0.25, 0.1, 1.875, 0.5), 3), 0.234)
 
     def test_call_implied_volatility_floating_error(self):
-        self.assertEqual(round(greeks.call_implied_volatility(16.0578, 15, 1.7863013698630137, 0.025, 1.65, 0.2), 3), 0.292)
+        """
+        Implied volatility cannot be negative. In this case the market price were too low...
+        """
+        self.assertEqual(round(greeks.call_implied_volatility(16.0578, 15, 1.7863013698630137, 0.025, 1.65, 0.2), 3), 0.000)
+
+    def test_call_implied_volatility_floating_error_2(self):
+        """
+        Implied volatility cannot be negative. In this case the market price were too low...
+        """
+        self.assertEqual(round(greeks.call_implied_volatility(16.1485, 15, 1.7863013698630137, 0.025, 1.63, 0.2), 3), 0.000)
 
 
 if __name__ == '__main__':

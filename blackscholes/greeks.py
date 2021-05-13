@@ -115,10 +115,11 @@ def bsm_vega(S0, K, T, r, sigma):
 # Implied volatility function
 
 
-def call_implied_volatility(S0, K, T, r, C0, sigma_est, it=100):
+def call_implied_volatility_old(S0, K, T, r, C0, sigma_est, it=100):
     """
     Implied Volatility of European call option in BSM Model.
-
+    TODO: Why in some cases the call_value is negative?
+    TODO: Understand the case where call_vega is zero
     :param S0:
     :param K:
     :param T:
@@ -130,16 +131,67 @@ def call_implied_volatility(S0, K, T, r, C0, sigma_est, it=100):
     """
     for i in range(it):
         _call_value = pricing.call_value(S0, K, T, r, sigma_est)
-        _call_vega = call_vega(S0, K, T, r, sigma_est)
-        # print('Estimated Call Value: {} - Market Call Value: {} - Vega: {}'.format(_call_value, C0, _call_vega))
-        if _call_value == C0:
+        _call_vega = call_vega(S0, K, T, r, sigma_est) # * 0.01
+        #if _call_vega < 0.001:
+        #    _call_vega = 0.01
+
+        if round(_call_value, 3) == round(C0, 3):
             break
-        sigma_est -= (_call_value - C0) / _call_vega
-        # print("sigma_est: ", sigma_est)
+
+        sigma_step = (_call_value - C0) / _call_vega
+        # sigma_step = sigma_step * 0.1
+        #if (sigma_step > 0) and (sigma_step < sigma_est):
+        sigma_est -= sigma_step
+        #else:
+        #    sigma_est += sigma_step
+
+        #if sigma_est < 0:
+        #    sigma_est = -sigma_est
+        print('Estimated Call Value: {} - Market Call Value: {} - Vega: {} - Sigma Est: {}'.
+              format(_call_value, C0, _call_vega, sigma_est))
     return sigma_est
 
-# Other implementation...
 
+def call_implied_volatility(S0, K, T, r, C0, sigma_est, it=100):
+    """
+    Implied Volatility of European call option in BSM Model.
+    :param S0:
+    :param K:
+    :param T:
+    :param r:
+    :param C0:
+    :param sigma_est:
+    :param it:
+    :return:
+    """
+
+    sigma_step = 0.01  # 1%
+    direction = 0  # undefined
+    for i in range(it):
+        _call_value = pricing.call_value(S0, K, T, r, sigma_est)
+
+        if _call_value < C0:  # sigma_est < implied volatility
+            if direction == -1:  # Changing direction of step
+                sigma_step = sigma_step * 0.1  # Make smaller steps
+            direction = 1  # up
+            sigma_est += sigma_step
+        else:
+            if direction == 1:  # Changing direction of step
+                sigma_step = sigma_step * 0.1  # Make smaller steps
+            direction = -1  # down
+            sigma_est -= sigma_step
+
+        # print('Estimated Call Value: {} - Market Call Value: {} - Sigma Est: {} - Sigma Step: {}'.
+        #      format(_call_value, C0, sigma_est, sigma_step))
+
+        if round(_call_value, 3) == round(C0, 3):
+            break
+
+        if sigma_est < 0.01:
+            # Implied volatility cannot be negative...
+            sigma_est = 0
+            break
+    return sigma_est
 
 def d1(S, K, T, r, sigma):
     return(log(S/K)+(r+sigma**2/2.)*T)/(sigma*sqrt(T))
