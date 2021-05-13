@@ -32,7 +32,7 @@ class TestGreeks(unittest.TestCase):
         Exemplo 19.6 pag 450 Hull
         S0=49, K=50, r=0.05, sigma=0.2 e T=0.3846
         """
-        self.assertEqual(round(greeks.call_vega(49, 50, 0.3846, 0.05, 0.2), 3), 0.121)
+        self.assertEqual(round(greeks.call_vega(49, 50, 0.3846, 0.05, 0.2), 1), 12.1)
 
     def test_call_theta(self):
         """
@@ -54,6 +54,9 @@ class TestGreeks(unittest.TestCase):
         S0=21, K=20, r=0.1, sigma (initial estimate)=0.2, C0=1.875 e T=0.25
         """
         self.assertEqual(round(greeks.call_implied_volatility(21, 20, 0.25, 0.1, 1.875, 0.2), 3), 0.235)
+
+    def test_call_implied_volatility_floating_error(self):
+        self.assertEqual(round(greeks.call_implied_volatility(16.0578, 15, 1.7863013698630137, 0.025, 1.65, 0.2), 3), 0.292)
 
 
 if __name__ == '__main__':

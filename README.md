@@ -1,9 +1,9 @@
-# b3files
-> This is a Python lib to help to decode the public files available from Brazilian Stock Exchange - B3.
+# blackscholes
+> This is a Python lib implementing Black and Scholes model.
 
 ## Release History
 
-* 0.0.1
+* 0.1.0
     * Work in progress
     
 ## Meta

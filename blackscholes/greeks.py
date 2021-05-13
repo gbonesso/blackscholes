@@ -1,11 +1,10 @@
-from math import log, sqrt, pi, exp
+from math import log, sqrt, exp
 from scipy.stats import norm
-from scipy.integrate import quad
 
 from blackscholes import pricing
 
 
-def dN(x):
+"""def dN(x):
     ''' Probability density function of standard normal random variable x. '''
     return exp(-0.5 * x ** 2) / sqrt(2 * pi)
 
@@ -111,7 +110,7 @@ def bsm_vega(S0, K, T, r, sigma):
     # print(" - ", stats.norm.pdf(d1, 0.0, 1.0))
     vega = S0 * stats.norm.pdf(d1, 0.0, 1.0) * sqrt(T)
     return vega
-
+"""
 
 # Implied volatility function
 
@@ -130,10 +129,12 @@ def call_implied_volatility(S0, K, T, r, C0, sigma_est, it=100):
     :return:
     """
     for i in range(it):
-        bsm_call_ = pricing.call_value(S0, K, T, r, sigma_est)
-        bsm_vega_ = bsm_vega(S0, K, T, r, sigma_est)
-        # print(bsm_call_, " - ", bsm_vega_)
-        sigma_est -= (bsm_call_ - C0) / bsm_vega_
+        _call_value = pricing.call_value(S0, K, T, r, sigma_est)
+        _call_vega = call_vega(S0, K, T, r, sigma_est)
+        # print('Estimated Call Value: {} - Market Call Value: {} - Vega: {}'.format(_call_value, C0, _call_vega))
+        if _call_value == C0:
+            break
+        sigma_est -= (_call_value - C0) / _call_vega
         # print("sigma_est: ", sigma_est)
     return sigma_est
 
@@ -157,7 +158,16 @@ def call_gamma(S, K, T, r, sigma):
 
 
 def call_vega(S, K, T, r, sigma):
-    return 0.01 * (S * norm.pdf(d1(S, K, T, r, sigma)) * sqrt(T))
+    """
+    I dropped the 0.01 normalization from the result.
+    :param S:
+    :param K:
+    :param T:
+    :param r:
+    :param sigma:
+    :return:
+    """
+    return (S * norm.pdf(d1(S, K, T, r, sigma)) * sqrt(T))
 
 
 # Another formula: https://www.macroption.com/black-scholes-formula/#theta
@@ -180,8 +190,8 @@ def call_theta_dif(S, K, T, r, sigma):
     THETA_DIFFERENTIAL = 1.e-5
     h = THETA_DIFFERENTIAL
 
-    p1 = bsm_call_value(S, K, T + h, r, sigma)
-    p2 = bsm_call_value(S, K, T - h, r, sigma)
+    p1 = pricing.call_value(S, K, T + h, r, sigma)
+    p2 = pricing.call_value(S, K, T - h, r, sigma)
 
     # p1 = self.BS(self.S, self.K, self.T + h, self.impvol, self.r, self.q)
     # p2 = self.BS(self.S, self.K, self.T - h, self.impvol, self.r, self.q)
