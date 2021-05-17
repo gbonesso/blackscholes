@@ -1,5 +1,11 @@
+import sys
 import unittest
+import logging
+
 from blackscholes import greeks
+
+logger = logging.getLogger()
+logger.level = logging.DEBUG
 
 
 # https://docs.python.org/3/library/unittest.html
@@ -19,6 +25,37 @@ class TestGreeks(unittest.TestCase):
         S0=49, K=50, r=0.05, sigma=0.2 e T=0.3846
         """
         self.assertEqual(round(greeks.call_delta(49, 50, 0.3846, 0.05, 0.2), 3), 0.522)
+
+    def test_call_delta_sigma_zero_otm(self):
+        """
+        spot_price < strike_price
+        """
+        self.assertEqual(round(greeks.call_delta(5, 10, 1.0, 0.05, 0), 3), 0.000)
+
+    def test_call_delta_sigma_zero_itm(self):
+        """
+        spot_price > strike_price
+        """
+        self.assertEqual(round(greeks.call_delta(15, 10, 1.0, 0.05, 0), 3), 1.000)
+
+    def test_put_delta(self):
+        """
+        Exemplo 19.1 pag 438 Hull
+        S0=49, K=50, r=0.05, sigma=0.2 e T=0.3846
+        """
+        self.assertEqual(round(greeks.put_delta(49, 50, 0.3846, 0.05, 0.2), 3), -0.478)
+
+    def test_put_delta_sigma_zero_itm(self):
+        """
+        spot_price < strike_price
+        """
+        self.assertEqual(round(greeks.put_delta(5, 10, 1.0, 0.05, 0), 3), -1.000)
+
+    def test_put_delta_sigma_zero_otm(self):
+        """
+        spot_price > strike_price
+        """
+        self.assertEqual(round(greeks.put_delta(15, 10, 1.0, 0.05, 0), 3), -0.000)
 
     def test_call_gamma(self):
         """
@@ -55,6 +92,20 @@ class TestGreeks(unittest.TestCase):
         """
         self.assertEqual(round(greeks.call_implied_volatility(21, 20, 0.25, 0.1, 1.875, 0.2), 3), 0.234)
 
+    def test_put_implied_volatility(self):
+        """
+        S0=26.33, K=26.46, T=7/365, r=0.025, C0=0.62, sigma (initial estimate)=0.2
+        Implied Volatility=38.3%
+        """
+        self.assertEqual(round(greeks.put_implied_volatility(26.33, 26.46, 7/365, 0.025, 0.62, 0.2), 3), 0.383)
+
+    def test_put_implied_volatility_strating_high(self):
+        """
+        S0=26.33, K=26.46, T=7/365, r=0.025, C0=0.62, sigma (initial estimate)=0.5
+        Implied Volatility=38.3%
+        """
+        self.assertEqual(round(greeks.put_implied_volatility(26.33, 26.46, 7/365, 0.025, 0.62, 0.5), 3), 0.384)
+
     def test_call_implied_volatility_starting_high(self):
         """
         Section 15.11 page 365 Hull
@@ -77,4 +128,9 @@ class TestGreeks(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    """stream_handler = logging.StreamHandler(sys.stdout)
+    logger.addHandler(stream_handler)
+    logging.basicConfig(filename='./log/TestGreeks.log', level=logging.DEBUG)
+    logging.debug('\n\nIniciando TestGreeks\n\n')"""
+
     unittest.main()
